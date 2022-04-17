@@ -64,11 +64,8 @@ void arrShift(const int s, int* arr1, int n)
 int sum(const int i, const int s, int* arr);  //прототипируем функцию описанную ниже но нужную уже сейчас
 bool balanceCheck(const size_t s, int32_t *arr)
 {
-    function<int(int, int, int*)> sumPtr = sum;
-    cout << endl; //DEBUGGING
     for (int i = 0; i < (s - 1); i++)
     {
-        cout << i << ": " << sum(0, (i + 1), arr) << "  =  " << sum((i + 1), s, arr) << endl; //DEBUGGING
         if (sum(0, (i + 1), arr) == sum((i + 1), s, arr))
             return true;
     }
@@ -134,21 +131,21 @@ int main()
     int32_t arr5[SIZE5] = { 1, 2, 7, 1, 1, 8 }; //true
     for (i = 0; i < SIZE5; i++) 
         cout << arr5[i] << " ";
-    cout << "--->" << boolalpha << balanceCheck(SIZE5, arr5) << endl;
+    cout << "---> " << boolalpha << balanceCheck(SIZE5, arr5) << endl;
     cout << endl;
 
     const size_t SIZE6 = 8;
     int32_t arr6[SIZE6] = { 12, 2, 1, 1, 8, 2, 3, 1 }; //true
     for (i = 0; i < SIZE6; i++)
         cout << arr6[i] << " ";
-    cout << "--->" << boolalpha << balanceCheck(SIZE6, arr6) << endl;
+    cout << "---> " << boolalpha << balanceCheck(SIZE6, arr6) << endl;
     cout << endl;
 
     const size_t SIZE7 = 6;
     int32_t arr7[SIZE7] = { 1, 2, 3, 1, 2, 8 }; //false
     for (i = 0; i < SIZE7; i++)
         cout << arr7[i] << " ";
-    cout << "--->" << boolalpha << balanceCheck(SIZE7, arr7) << endl;
+    cout << "---> " << boolalpha << balanceCheck(SIZE7, arr7) << endl;
     cout << endl;
     return 0;
 }
