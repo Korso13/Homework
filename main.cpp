@@ -207,6 +207,43 @@ int main()
     //=============================================================================================
     //Задание 5. Поиск слова в файле
     //=============================================================================================
-
+    string filename4;
+    string s_string;
+    cout << "Введите название файла: ";
+    cin >> filename4;
+    if (cin.fail())
+    {
+        cin.clear();
+        cin.ignore(32767, '\n');
+    }
+    filename4 += ".txt";
+    cout << endl;
+    cout << "Что ищем в нём? ";
+    cin >> s_string;
+    if (cin.fail())
+    {
+        cin.clear();
+        cin.ignore(32767, '\n');
+    }
+    //открываем файл и ищем
+    bool check = false;
+    string Rstr;
+    ifstream fi2(filename4);
+    if (fi2.is_open())
+    {
+        do
+        {
+            getline(fi2, Rstr);
+            if (Rstr.find(s_string) != string::npos) //проверить синтакс!!!
+            {
+                cout << "Строка " << s_string << " нашлась в файле " << filename4 << "!";
+                check = true;
+                    break;
+            }
+        } while (!fi2.eof());
+        fi2.close();
+    }
+    if (check == false)
+        cout << "Строка " << s_string << " НЕ нашлась в файле " << filename4 << "!";
     return 0;
 }
