@@ -1,151 +1,212 @@
 ﻿#include <iostream>
-#include "stdint.h" // in8_t = char; int16_t = short int; int32_t = long (int); int64_t = long long;
-
+#include <fstream>
+#include <string>
 using namespace std;
 
-//Задание 1. Печать одномерного массива через функцию с передачей аргументов
-void DoublePrinter(const size_t Size, double *arr)
-{ 
-    int i;
-    for (i = 0; i < Size; i++)
+//=============================================================================================
+//Задание 1. Динамический одномерный массив
+//=============================================================================================
+int sqr(int a, size_t i) //функция для возведения в степень
+{
+    int res{ 1 };
+    if (i == 0)
+        return res;
+    else
+        for (int j = 0; j < i; j++)
+        {
+            res = res * a;
+        }
+    return res;
+}
+void fill_print(size_t s1, int* arr1) //функция заполнения массива и вывода на печать.
+{
+    for (size_t i = 0; i < s1; i++)
     {
-        cout << arr[i] << " ";
+        arr1[i] = 1 * sqr(2, i); //функция возведения в степень i. 
+        cout << arr1[i] << " ";
     }
-    cout << endl;
 }
-
-//Задание 2. Подмена значений в массиве
-void replacer(const size_t size, int16_t* arr)
+//=============================================================================================
+//Задание 2. Динамический двухмерный массив
+//=============================================================================================
+int** init() //Инициализация двухмерного динамического массива
 {
-    int i;
-    for (i = 0; i < size; i++)
-        arr[i] = !arr[i];
-}
-
-//Задание 3. Функция заполнения массива
-void arrInit(const size_t size_i, int16_t* arr)
-{
-    arr[0] = 1;
-    for (int i = 1; i < size_i; i++)
-        arr[i] = arr[i - 1] + 3;
-}
-
-//Задание 4. Смещение массива
-void arrShift(const int s, int* arr1, int n)
-{
-    if (n == 0)
-        return;
-    if (abs(n) > s)   //усечение n когда оно больше размера массива
-        n = n % s;
-    const int shift = (n > 0) ? abs(n) : (s - abs(n)); //Определяем направление смещения
-    int i;
-    int *arr2 = new int[s]; //Не хотел хардкодить размер массива, а передать константу чтобы не ругался компилятор не выходило. Подсмотрел решение в сети 
-    
-    //Начало перестановок
-    int k = 0;
-    for (i = shift; i < s; i++)
+    int** arr2 = new (std::nothrow) int* [4];
+    if (arr2 != nullptr)
     {
-        arr2[i] = arr1[k];
-        k++;
+        for (size_t i = 0; i < 4; i++)
+        {
+            arr2[i] = new (std::nothrow) int[4];
+            if (arr2[i] != nullptr)
+                continue;
+            else
+            {
+                break;
+                return 0;
+            }
+        }
+        return arr2;
     }
-    k = (n < 0) ? abs(n) : (s - abs(n)); //поправка по направлению смещения. Если смещение влево, отступ для записи отсчитываем слева. Если смещение вправо - то с правого края
-    for (i = 0; i < shift; i++)
-    {
-        arr2[i] = arr1[k];
-        k++;
-    }
-    //накатываем смещённый массив на изначальный
-    for (i = 0; i < s; i++)
-        arr1[i] = arr2[i];
-    return;
+    else
+        return 0;
 }
 
-//Задание 5. Проверка массива на сбалансированность
-int sum(const int i, const int s, int* arr);  //прототипируем функцию описанную ниже но нужную уже сейчас
-bool balanceCheck(const size_t s, int32_t *arr)
+void fill_print2(int **arr2) //заполнение и печать
 {
-    for (int i = 0; i < (s - 1); i++)
+    srand(time(0));
+    for (size_t i = 0; i < 4; i++) 
     {
-        if (sum(0, (i + 1), arr) == sum((i + 1), s, arr))
-            return true;
+        for (size_t j = 0; j < 4; j++)
+        {
+            arr2[i][j] = (rand() % 100);
+            cout << arr2[i][j] << " ";
+        }
+        cout << endl;
     }
-    return false;
 }
 
-int sum(const int i, const int s, int* arr)
+void del1(int** arr2)  //Удаление
 {
-    int result = 0;
-    for (int j = i; j < s; j++)
-        result = result + arr[j];
-    return result;
+    for (size_t i = 0; i < 4; i++)
+    {
+        delete[] arr2[i];
+    }
+    delete[] arr2;
 }
 
 int main()
 {
     setlocale(LC_ALL, "Russian");
-    //Задание 1. Печать одномерного массива через функцию с передачей аргументов
-    const size_t SIZE = 5;
-    double arr1[SIZE] = { 3.14, 5.15, 6.23, 2.43, 1.24 };
-    DoublePrinter(SIZE, arr1);
+    //=============================================================================================
+    //Задание 1. Динамический одномерный массив
+    //=============================================================================================
 
-    //Задание 2. Подмена значений в массиве
-    const size_t SIZE2 = 10;
-    int16_t arr2[SIZE2] = { 1, 0, 0, 1, 1, 1, 1, 0, 0, 1 };
-    int i;
-    for (i = 0; i < SIZE2; i++)
-        cout << arr2[i] << " ";
-    std::cout << endl;
-
-    replacer(SIZE2, arr2);
-
-    for (i = 0; i < SIZE2; i++)
-        cout << arr2[i] << " ";
+    size_t s1{ 0 };
+    cout << "Введите размер массива: ";
+    cin >> s1;
+    int* arr1 = new (std::nothrow) int[s1];
+    if (arr1 != nullptr)
+    {
+        fill_print(s1, arr1);
+        delete[] arr1;
+    }
+    cout << endl;
     cout << endl;
 
-    //Задание 3. Функция заполнения массива
-    const size_t SIZE3 = 8;
-    int16_t arr3[SIZE3]{ 0 };
-    arrInit(SIZE3, arr3);
-    for (i = 0; i < SIZE3; i++)
-        cout << arr3[i] << " ";
-    cout << endl;
+    //=============================================================================================
+    //Задание 2. Динамический двухмерный массив
+    //=============================================================================================
 
-    //Задание 4. Смещение массива
-    const int SIZE4 = 9;
-    int shf = 15; //Величина смещения. Положительные значения смещают массив циклически вправо. Отрицательные - влево
-    int arr4[SIZE4] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    int** arr2 = init(); //инициализация массива
+    fill_print2(arr2); //заполнение и печать
+    del1(arr2);  //Удаление
+
+    //=============================================================================================
+    //Задание 3. Создание 2х txt файлов
+    //=============================================================================================
+
+    string filename1;
+    string filename2;
+   
+    cout << "введите имя файла 1: ";
+    cin >> filename1;
+    if (cin.fail())
+    {
+        cout << "Некорректный ввод!" << endl;
+        cin.clear();
+        cin.ignore(32767, '\n');
+    }
+    filename1 += ".txt";
+    ofstream fo(filename1);
+    if (fo.is_open())
+    {
+        fo << "Look at my file, " << endl;
+        fo << "Look at my file, " << endl;
+        fo << "Look at my file, " << endl;
+        fo.close();
+    }
     
-    for (i = 0; i < SIZE4; i++) //до
-        cout << arr4[i] << " ";
-    cout << endl;
+    cout << "введите имя файла 2: ";
+    cin >> filename2;
+    if (cin.fail())
+    {
+        cout << "Некорректный ввод!" << endl;
+        cin.clear();
+        cin.ignore(32767, '\n');
+    }
+    filename2 += ".txt";
+    fo.open(filename2);
+    if (fo.is_open())
+    {
+        fo << "my file is amazing!" << endl;
+        fo << "my file is amazing!" << endl;
+        fo << "my file is amazing!" << endl;
+        fo.close();
+    }
+    //=============================================================================================
+    //Задание 4. Склейка файлов
+    //=============================================================================================
+    cout << "введите имя файла 1: ";
+    cin >> filename1;
+    if (cin.fail())
+    {
+        cout << "Некорректный ввод!" << endl;
+        cin.clear();
+        cin.ignore(32767, '\n');
+    }
+    filename1 += ".txt";
 
-    arrShift(SIZE4, arr4, shf);
+    cout << "введите имя файла 2: ";
+    cin >> filename2;
+    if (cin.fail())
+    {
+        cout << "Некорректный ввод!" << endl;
+        cin.clear();
+        cin.ignore(32767, '\n');
+    }
+    filename2 += ".txt";
+
+    string filename3;
+    cout << "Как назовём файл склейки? ";
+    cin >> filename3;
+    if (cin.fail())
+    {
+        cout << "Некорректный ввод!" << endl;
+        cin.clear();
+        cin.ignore(32767, '\n');
+    }
+    filename3 += ".txt";
     
-    for (i = 0; i < SIZE4; i++) //после
-        cout << arr4[i] << " ";
-    cout << endl;
+    string str;
+    ofstream fo2(filename3); //собственно склейка
+    if (fo2.is_open())
+    {
+        ifstream fi1(filename1);
+        if (fi1.is_open())
+        {
+            for (size_t i = 0; i < 3; i++)
+            {
+                getline(fi1, str);
+                fo2 << str << endl;
+            }
+            fi1.close();
+        }
+        fi1.open(filename2);
+        if (fi1.is_open())
+        {
+            for (size_t i = 0; i < 3; i++)
+            {
+                getline(fi1, str);
+                fo2 << str << endl;
+            }
+            fi1.close();
+        }
+        fo2.close();
+    }
 
-    //Задание 5. Проверка массива на сбалансированность
-    cout << "Задание 5:" << endl;   //УДАЛИТЬ!!!
-    const size_t SIZE5 = 6;
-    int32_t arr5[SIZE5] = { 1, 2, 7, 1, 1, 8 }; //true
-    for (i = 0; i < SIZE5; i++) 
-        cout << arr5[i] << " ";
-    cout << "---> " << boolalpha << balanceCheck(SIZE5, arr5) << endl;
-    cout << endl;
+    //=============================================================================================
+    //Задание 5. Поиск слова в файле
+    //=============================================================================================
 
-    const size_t SIZE6 = 8;
-    int32_t arr6[SIZE6] = { 12, 2, 1, 1, 8, 2, 3, 1 }; //true
-    for (i = 0; i < SIZE6; i++)
-        cout << arr6[i] << " ";
-    cout << "---> " << boolalpha << balanceCheck(SIZE6, arr6) << endl;
-    cout << endl;
-
-    const size_t SIZE7 = 6;
-    int32_t arr7[SIZE7] = { 1, 2, 3, 1, 2, 8 }; //false
-    for (i = 0; i < SIZE7; i++)
-        cout << arr7[i] << " ";
-    cout << "---> " << boolalpha << balanceCheck(SIZE7, arr7) << endl;
-    cout << endl;
     return 0;
 }
