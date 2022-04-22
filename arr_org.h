@@ -1,7 +1,8 @@
 #pragma once
 
-namespace MeSpc {
-float arrInit();
-void arrPrint(float *arr, SIZE);
-void arrCount(float *arr, SIZE);
+namespace MySpc 
+{
+	void arrInit(float *arr);
+	void arrPrint(float *arr);
+	void arrCount(float *arr);
 }
