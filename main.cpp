@@ -29,8 +29,11 @@ else return false;
 //Задание 3. Сортировка массива
 //=============================================================================================
 #define SIZE_ARR 7
-#define SwapINT(a, b)\
-
+#define SwapINT(a, b) \
+int c \
+c = a \
+a = b \
+b = c;
 
 int main()
 {
@@ -59,14 +62,29 @@ std::cout << alphabool << CHECK(a, b) << std::endl;
     //=============================================================================================
 int = arr1[SIZE_ARR];
 std::cout << "Введите " << SIZE_ARR << " чисел: ";
-for (int i = 0; i < SIZE_ARR; i++)
+for (int i = 0; i < SIZE_ARR; i++) //Заполняем массив
 {
 std::cin >> arr1[i];
 cinCheck();
 std::cout << " ";
 }
-
-    
+ 
+bool trg = false; 
+do //Схема из двух циклом для сортировки
+{
+trg = false;
+ for (int i = 1; i < SIZE_ARR; i++)
+ {   
+  if (arr1[i] < arr1[i-1])
+  {
+     SwapINT(arr1[i], arr1[i-1])
+     trg = true;
+  }
+}
+while (trg != false); 
+for (int i = 0; i < SIZE_ARR; i++)
+{std::cout << arr1[i] << " ";}
+ std::cout << std::endl;
     //=============================================================================================
     //Задание 4. 
     //=============================================================================================
