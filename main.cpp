@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include "arr_org.h"
 
@@ -34,6 +35,19 @@ int c \
 c = a \
 a = b \
 b = c;
+
+ //=============================================================================================
+ //Задание 4. Побайтовое выравнивание, структуры и все, все, все
+ //=============================================================================================
+ #pragma pack(push, 1)
+struct employee 
+{
+ int id{0};
+ string mane;
+ short int age{0};
+ int salary{0};
+}
+ #pragma pack(pop)
 
 int main()
 {
@@ -87,8 +101,29 @@ for (int i = 0; i < SIZE_ARR; i++)
 {std::cout << arr1[i] << " ";}
  std::cout << std::endl;
     //=============================================================================================
-    //Задание 4. 
+    //Задание 4. Побайтовое выравнивание, структуры и все, все, все
     //=============================================================================================
- 
+ employee * worker1 = new (std::nowthrow) employee;
+ employee->id = 1;
+ employee->name = Jon Doe;
+ employee->age = 32;
+ employee->salary = 45'000;
+ std::cout << "id: " << employee->id << " ";
+ std::cout << "name: " << employee->name << " ";
+ std::cout << "age: " << employee->age << " ";
+ std::cout << "salary: " << employee->salary << " ";
+ std::cout << std::endl;
+ std::cout << "Размер структуры worker1 = " << sizeof(worker1);
+ std::ofstream fout("output.txt");
+  if (fout.is_open())
+  {
+   fout << "id: " << employee->id << std::endl;
+   fout << "name: " << employee->name <<  std::endl;
+   fout << "age: " << employee->age <<  std::endl;
+   fout << "salary: " << employee->salary <<  std::endl;
+   fout.close();
+  }
+  else
+   cerr << "Ошибка создания\открытия файла!" << std::endl;
     return 0;
 }
