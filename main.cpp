@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <cassert> // для assert()
 #include <vector>
+#include <set> //for 2nd task
 
 //from 3rd homework for use in task 3
 enum Ranks { two = 2, three = 3, four = 4, five = 5, six = 6, seven = 7, eight = 8, nine = 9, ten = 10, jack = 10, queen = 10, king = 10, ace = 1 };
@@ -20,7 +21,7 @@ public:
         m_faceUp = !m_faceUp;
     }
 
-    Ranks GetValue()
+    Ranks GetValue() const
     {
         return m_value;
     }
@@ -188,7 +189,7 @@ public:
       } while (trg != false);
   }
 
-  void print()
+  void print() const
   {
       for (size_t i = 0; i < m_length; i++)
       {
@@ -220,7 +221,7 @@ public:
         m_hand.clear();
     }
 
-    int GetValue() 
+    int GetValue() const
     {
         int sum{ 0 };
         int aces{ 0 };
@@ -272,17 +273,61 @@ int main(int argc, char* argv[])
 
     {
         std::vector<int> vec1;
-        vec1.push_back(1); //
-        vec1.push_back(10); //
-        vec1.push_back(24); //
-        vec1.push_back(10); //
+        vec1.push_back(1);
+        vec1.push_back(10);
+        vec1.push_back(24);
+        vec1.push_back(10);
         vec1.push_back(55);
-        vec1.push_back(124); //
-        vec1.push_back(1); //
+        vec1.push_back(124);
+        vec1.push_back(1);
         vec1.push_back(86);
-        vec1.push_back(124); //
+        vec1.push_back(124);
         vec1.push_back(76);
-        vec1.push_back(24); //
+        vec1.push_back(24);
+        vec1.push_back(56); //total 12. should be 8 unique. Let's check it
+
+        std::set<int> uniqueElements;
+        for (size_t i = 0; i < vec1.size(); i++)
+        {
+            uniqueElements.insert(vec1[i]);
+        }
+
+        std::cout << "Кол - во уникальных элементов вектора: " << uniqueElements.size() << std::endl;
+    }
+
+
+    //Tests for task 3. Class Hand 
+    std::cout << "Task 3" << std::endl;
+    {
+        Card card1(ace, clubs, 1);
+        Card card2(jack, clubs, 1);
+        Card card3(seven, clubs, 1);
+        Card card4(five, clubs, 1);
+        Hand hand1;
+        hand1.Add(&card1);
+        std::cout << hand1.GetValue() << std::endl; //11
+        hand1.Add(&card2);
+        std::cout << hand1.GetValue() << std::endl; //21
+        hand1.Add(&card4);
+        std::cout << hand1.GetValue() << std::endl; //16
+        hand1.Add(&card3);
+        std::cout << hand1.GetValue() << std::endl; //23
+    }
+
+    //old solution for task 2
+    /*{
+        std::vector<int> vec1;
+        vec1.push_back(1);
+        vec1.push_back(10);
+        vec1.push_back(24);
+        vec1.push_back(10);
+        vec1.push_back(55);
+        vec1.push_back(124);
+        vec1.push_back(1);
+        vec1.push_back(86);
+        vec1.push_back(124);
+        vec1.push_back(76);
+        vec1.push_back(24);
         vec1.push_back(56); //total 12. should be 8 unique. Let's check it
 
         std::vector<int> vU;
@@ -302,23 +347,8 @@ int main(int argc, char* argv[])
                 vU.push_back(vec1[i]);
         }
         std::cout << "Кол - во уникальных элементов вектора: " << vU.size() << std::endl;
-    }
+    }*/
 
 
-    //Tests for task 3. Class Hand 
-    std::cout << "Task 3" << std::endl;
-    Card card1(ace, clubs, 1);
-    Card card2(jack, clubs, 1);
-    Card card3(seven, clubs, 1);
-    Card card4(five, clubs, 1);
-    Hand hand1;
-    hand1.Add(&card1);
-    std::cout << hand1.GetValue() << std::endl; //11
-    hand1.Add(&card2);
-    std::cout << hand1.GetValue() << std::endl; //21
-    hand1.Add(&card4);
-    std::cout << hand1.GetValue() << std::endl; //16
-    hand1.Add(&card3);
-    std::cout << hand1.GetValue() << std::endl; //23
     return 0;
 }
