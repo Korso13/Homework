@@ -149,14 +149,15 @@ int main(int argc, char* argv[])
     //Task 1. Date and today smart pointers
     //=============================================================================================================================
 
-    std::auto_ptr<Date> today(new Date);
-    std::auto_ptr<Date> date(new Date);
+    std::shared_ptr<Date> today(new Date);
+    std::shared_ptr<Date> date(new Date);
     today->setDay(lct->tm_mday);
     today->setMonth(month);
     today->setYear((1900 + lct->tm_year));
 
     std::cout << *today << std::endl;
     date = today;
+    today.reset();
 
     if (date.get() == nullptr)
         std::cout << "date smart pointer is null" << std::endl;
