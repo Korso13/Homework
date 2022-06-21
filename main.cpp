@@ -1,184 +1,171 @@
 ﻿#include <iostream>
-#include <memory>
-#include <ctime>
-
-int convertMonthInt(const std::string& month)
-{
-    if (month == "January")
-        return 1;
-    if (month == "February")
-        return 2;
-    if (month == "March")
-        return 3;
-    if (month == "April")
-        return 4;
-    if (month == "May")
-        return 5;
-    if (month == "June")
-        return 6;
-    if (month == "July")
-        return 7;
-    if (month == "August")
-        return 8;
-    if (month == "September")
-        return 9;
-    if (month == "October")
-        return 10;
-    if (month == "November")
-        return 11;
-    if (month == "December")
-        return 12;
-    else
-        return 0;
-}
-
-std::string convertMonthInt(const int& month)
-{
-    switch (month)
-    {
-    case(0):
-        return "January";
-    case(1):
-        return "February";
-    case(2):
-        return "March";
-    case(3):
-        return "April";
-    case(4):
-        return "May";
-    case(5):
-        return "June";
-    case(6):
-        return "July";
-    case(7):
-        return "August";
-    case(8):
-        return "September";
-    case(9):
-        return "October";
-    case(10):
-        return "November";
-    case(11):
-        return "December";
-    default:
-        return "UNDEFINED";
-    }
-}
-
-//=============================================================================================================================
-//Task 1. Date and today smart pointers
-//=============================================================================================================================
-
-class Date
-{
-private:
-    int m_day{0};
-    std::string m_month{"UNDEFINED"};
-    int m_year{0};
-public:
-    Date(int day, std::string month, int year) : m_day(day), m_month(month), m_year(year) {};
-    Date() {};
-    ~Date() {};
-    void setDay(int day) { m_day = day; };
-    void setMonth(std::string month) { m_month = month; };
-    void setYear(int year) { m_year = year; };
-    void setDate(int day, std::string month, int year) { setDay(day); setMonth(month); setYear(year); };
-
-    int getDay() const { return m_day; };
-    std::string getMonth() const { return m_month; };
-    int getYear() const { return m_year; };
-
-    friend std::ostream& operator<<(std::ostream& out, const Date& date);
-
-    void operator=(Date date2)
-    {
-        this->setDate(date2.getDay(), date2.getMonth(), date2.getYear());
-    }
-};
-
-std::ostream& operator<<(std::ostream& out, const Date& date) 
-{
-    out << date.getDay() << " " << date.getMonth() << " " << date.getYear();
-    return out;
-};
+#include <fstream>
+#include <utility>
+#include <vector>
+#include <algorithm>
+#include "Timer.hpp"
+#include <string>
 
 
 //=============================================================================================================================
-//Task 2. date1 and date 2 smart pointers
+//Task 1. Ptr swap
 //=============================================================================================================================
 
-std::shared_ptr<Date> compareDates(std::shared_ptr<Date> date1, std::shared_ptr<Date> date2)
+template <class P1, class P2>
+void Swap(P1& ptr1, P2& ptr2)
 {
-    if (date1->getYear() > date2->getYear())
-        return date1;
-    else if (date1->getYear() != date2->getYear())
-        return date2;
-
-    int m1 = convertMonthInt(date1->getMonth());
-    int m2 = convertMonthInt(date2->getMonth());
-    if (m1 > m2)
-        return date1;
-    else if (m1 != m2)
-        return date2;
-
-    if (date1->getDay() > date2->getDay())
-        return date1;
-    else if (date1->getDay() != date2->getDay())
-        return date2;
-    return nullptr;
+    auto temp = ptr1;
+    ptr1 = reinterpret_cast<P1>(ptr2);
+    ptr2 = reinterpret_cast<P2>(temp);
 }
 
-void swapDates(std::shared_ptr<Date> date1, std::shared_ptr<Date> date2)
+//=============================================================================================================================
+//Task 2. SortPointers
+//=============================================================================================================================
+
+template <class P>
+void SortPointers(std::vector<P>& ptrVector)
 {
-    std::shared_ptr<Date> temp(new Date(date1->getDay(), date1->getMonth(), date1->getYear()));
-    *date1 = *date2;
-    *date2 = *temp;
-    return;
+    sort(ptrVector.begin(), ptrVector.end(), [](const P& obj1, const P& obj2) {return *(obj1) < *(obj2); });
 }
+
 
 int main(int argc, char* argv[])
 {
     setlocale(LC_ALL, "Russian");
 
-    //Getting date data for task 1
-    time_t now = time(0);
-    tm* lct = localtime(&now);
-    std::string month = convertMonthInt(lct->tm_mon);
-
     //=============================================================================================================================
-    //Task 1. Date and today smart pointers
+    //Task 1. Ptr swap tests
     //=============================================================================================================================
 
-    std::shared_ptr<Date> today(new Date);
-    std::shared_ptr<Date> date(new Date);
-    today->setDay(lct->tm_mday);
-    today->setMonth(month);
-    today->setYear((1900 + lct->tm_year));
+    {
+        int a{ 5 };
+        double b{ 3.14 };
+        std::string str{ "Testing" };
+        std::string str2{ "Testing 2" };
+        int* ptr1 = &a;
+        double* ptr2 = &b;
+        std::string* ptr3 = &str;
+        std::string* ptr4 = &str2;
 
-    std::cout << *today << std::endl;
-    date = today;
-    today.reset();
+        auto printPtr = [&]() {std::cout << "a: " << a << " " << "ptr1: " << ptr1 << std::endl << "str: " << str << " " << "ptr3: " << ptr3 << std::endl << "b: " << b << " " << "ptr2: " << ptr2 << std::endl << "str2: " << str2 << " " << "ptr4: " << ptr4 << std::endl << std::endl;; };
+        printPtr();
+        Swap<int*, std::string*>(ptr1, ptr3);
+        Swap<double*, std::string*>(ptr2, ptr4);
+        printPtr();
 
-    if (date.get() == nullptr)
-        std::cout << "date smart pointer is null" << std::endl;
-    else
-        std::cout << "date smart pointer is not null" << std::endl;
 
-    if (today.get() == nullptr)
-        std::cout << "today smart pointer is null" << std::endl;
-    else
-        std::cout << "today smart pointer is not null" << std::endl;
+    }
+
+
+    //=============================================================================================================================
+    //Task 2. SortPointers tests
+    //=============================================================================================================================
+
+
+    {
+        std::vector<int*> vector;
+        auto printPtrVector = [](const std::vector<int*>& vector) {
+            for (auto const& element : vector)
+            {
+                std::cout << *(element) << " ";
+            }
+            std::cout << std::endl << std::endl;
+        };
+
+        for (size_t i = 0; i < 20; i++)
+        {
+            vector.push_back(new int(rand() % 100));
+        }
+
+        printPtrVector(vector);
+        SortPointers(vector);
+        printPtrVector(vector);
+
+    }
+
+    //=============================================================================================================================
+    //Task 3. Counting vowels in War and Peace
+    //=============================================================================================================================
+
+    {
+        std::ifstream file("War and peace.txt");
+        file.seekg(0, std::ios::end);
+        size_t size = file.tellg();
+        file.seekg(0);
+        std::string s(size, ' ');
+        file.read(&s[0], size);
+
+        //std::string vowels{ "EYUOAeyuioaÀÁÄÒÓÖÙÚÜÈÉËÌÍÏàáäèéëíìïòóöùúü" }; // methods using find miss all extra characters ;(
+        std::string vowels{ "EYUOAeyuioa" };
+
+        Timer timer("count_if and find");
+        std::cout << "Кол-во гласных: " << count_if(s.begin(), s.end(), [vowels](const char& ch) {
+            if (vowels.find(ch) != std::string::npos)
+                return true;
+            else
+                return false;
+            }) << std::endl;
+        timer.print();
+        std::cout << std::endl;
         
-    std::cout << "Task 2" << std::endl;
-    auto date1 = std::make_shared<Date>(1, "January", 2021);
-    auto date2 = std::make_shared<Date>(13, "November", 2021);
+        timer.start("count_if and 'for' loop");
+        int count{ 0 };
+        for (const auto elem : vowels)
+        {
+            count = count + count_if(s.begin(), s.end(), [elem](const char& ch){if (elem == ch)
+                return true;
+            else
+                return false; });
+        }
+        std::cout << "Кол-во гласных: " << count << std::endl;
+        timer.print();
+        std::cout << std::endl;
 
-    std::cout << "The latest date of two is: " << *(compareDates(date1, date2)) << std::endl;
+        timer.start("'for' loop and find");
+        count = 0;
+        for (const auto elem : s)
+        {
+            if (vowels.find(elem) != std::string::npos)
+                count++;
+        }
+        std::cout << "Кол-во гласных: " << count << std::endl;
+        timer.print();
+        std::cout << std::endl;
 
-    std::cout << "Date 1 before swap: " << *date1 << std::endl;
-    std::cout << "Date 2 before swap: " << *date2 << std::endl;
-    swapDates(date1, date2);
-    std::cout << "Date 1 after swap: " << *date1 << std::endl;
-    std::cout << "Date 2 after swap: " << *date2 << std::endl;
+        timer.start("double 'for' loop");
+        count = 0;
+        for (const auto elem_book : s)
+        {
+            for (const auto elem_vowel : vowels)
+                if (elem_vowel == elem_book)
+                    count++;
+        }
+        std::cout << "Кол-во гласных: " << count << std::endl;
+        timer.print();
+        std::cout << std::endl;
+
+        /*
+        Результаты:
+        Для малого фрагмента:
+        count_if and find: 	0.6787 0.674 0.678
+        count_if and 'for' loop:  0.7292 0.699 0.695
+        'for' loop and find: 	0.6675 0.6647 0.6663
+        double 'for' loop: 		0.6716 0.6445 0.6359
+
+        Для всей книги:
+        count_if and find: 	90.2957  89.2917  89.4096
+        count_if and 'for' loop:  149.513  147.153  147.068
+        'for' loop and find: 	78.1582  79.2594  77.6809
+        double 'for' loop: 		117.918  118.031  117.32
+
+        Выводы:
+        Методы count_if and find и 'for' loop and find - самые быстрые, но не работают "из коробки" с нестандартными символами типа "àáäèéëíìïòóöùúü"
+        Методы count_if and 'for' loop и double 'for' loop - заметно медленее на больших фрагментах, но зато ловят все символы :)
+        */
+
+    }
+    
+
     return 0;
 }
