@@ -1,73 +1,162 @@
 ﻿#include <iostream>
 #include <windows.h>
 #include <vector>
-#include <deque>
+#include <mutex>
+#include <thread>
+#include <sstream>
+#include <map>
 #include <algorithm>
-#include <numeric>
-#include <cmath>
-#include "randDouble.hpp"
-#include <iomanip>
 
 using namespace std;
+once_flag callflag;
 
 //=============================================================================================================================
-//Task 1. Insert sorted (and its template)
+//Task 1. thread-safe cout wrapper
 //=============================================================================================================================
 
-bool insert_sorted(vector<int>& _vector, int _new_value)
+class pcout
 {
-    if (_new_value < _vector[0])
+private:
+    map<thread::id, string> PrintQueue;
+public:
+    pcout() {}
+
+    template<class T>
+    friend pcout& operator<<(pcout& _pcout, T _text);
+
+    void print()
     {
-        _vector.insert(_vector.begin(), _new_value);
-        return true;
+        mutex _Mutex;
+        lock_guard<mutex> lg{ _Mutex };
+        auto it = PrintQueue.find(this_thread::get_id());
+        cout << it->second;
+        PrintQueue.erase(it);
     }
+
+    ~pcout() {}
+};
+
+template<class T>
+pcout& operator<<(pcout& _pcout, T _text)
+{
+    mutex _Mutex;
+    lock_guard<mutex> lg{ _Mutex };
+    auto th_id = this_thread::get_id();
+    stringstream input;
+    input << _text;
+    if (_pcout.PrintQueue.find(th_id) != _pcout.PrintQueue.end())
+        _pcout.PrintQueue.find(th_id)->second += input.str();
     else
-        if (_new_value > _vector[_vector.size() - 1])
-        {
-            _vector.push_back(_new_value);
-            return true;
-        }
-        else
-        {
-            auto it = lower_bound(_vector.begin(), _vector.end(), _new_value);
-            if (it != _vector.end())
-            {
-                _vector.insert(it, _new_value);
-                return true;
-            }
-            else
-                return false; //Не знаю как до такого может дойти, но на всякий
-        }
+        _pcout.PrintQueue.insert({ th_id, input.str() });
+    input.clear();
+    return _pcout;
 }
 
-template <class Container, class T = class Container::value_type> 
-bool insert_sorted(Container& _container, T _new_value)
+void TestPrint(pcout p_cout, int i)
 {
-    if (_new_value < *(min_element(_container.begin(), _container.end())))
-    {
-        _container.insert(_container.begin(), _new_value);
-        return true;
-    }
-    else
-        if (_new_value > *(_container.end() - 1))
-        {
-            _container.insert(_container.end() - 1, _new_value);
-            return true;
-        }
-        else
-        {
-            auto it = lower_bound(_container.begin(), _container.end(), _new_value);
-            if (it != _container.end())
-            {
-                _container.insert(it, _new_value);
-                return true;
-            }
-            else
-                return false;
-        }
+    p_cout << "This is the " << i << " thread" << "\n";
+    p_cout << "Thread " << i << " prints fine!" << "\n";
+    p_cout.print();
+    return;
 }
 
+//=============================================================================================================================
+//Task 2. Multi-threaded prime number search progress
+//=============================================================================================================================
 
+void PrimeNumSearcher(size_t _i, size_t& _prime, bool& _ready_flag)
+{
+    mutex prime_mutex;
+    if (_i == 1)
+    {
+        lock_guard prime_guard(prime_mutex);
+        _prime = 2;
+        return;
+    }
+    else if (_i == 0)
+        return;
+
+    size_t counter{ 2 }, current_num{ 3 };
+    bool prime_check{ true };
+    do
+    {
+        prime_check = true;
+        for (size_t i = 2; i < current_num; i++) //checking if current_num is prime
+        {
+            if (current_num % i == 0)
+            {
+                current_num++;
+                prime_check = false;
+                break;
+            }
+        }
+        if (prime_check == false)  //current_num - 1 not a prime number
+            continue;
+        else //another prime number found
+        {
+            lock_guard<mutex> prime_guard(prime_mutex);
+            _prime = current_num;
+            current_num++;
+            counter++;
+        }
+    } while ((counter-1) != _i);
+    _ready_flag = true;
+    return;
+}
+
+//=============================================================================================================================
+//Task 3. 
+//=============================================================================================================================
+
+void owner(vector<size_t>& _valuables, mutex& owner_valuables)
+{
+    unique_lock owner_lock(owner_valuables);
+    owner_lock.unlock();
+    while (_valuables.size() != 0)
+    {
+        size_t new_thing{ 0 }; 
+        do
+        {
+            new_thing = rand() % 100;
+        } while (new_thing == 0);
+        owner_lock.lock();
+        _valuables.push_back(new_thing);
+        cout << "Remaining valuables: ";
+        for (const auto& val : _valuables)
+            cout << val << " ";
+        cout << '\n';
+        owner_lock.unlock();
+        this_thread::sleep_for(1s);
+    }
+    return;
+}
+
+void thief(vector<size_t>& _valuables, mutex& owner_valuables)
+{
+    unique_lock thief_lock(owner_valuables);
+    thief_lock.unlock();
+    while (_valuables.size() != 0)
+    {
+        if (!thief_lock.try_lock())
+        {
+            this_thread::sleep_for(500ms);
+            continue;
+        }
+        auto it = max_element(_valuables.begin(), _valuables.end());
+        if (*it != 0)
+        {
+            _valuables.erase(it);
+            _valuables.shrink_to_fit();
+        }
+        cout << "Remaining valuables: ";
+        for (const auto& val : _valuables)
+            cout << val << " ";
+        cout << '\n';
+        thief_lock.unlock();
+        this_thread::sleep_for(500ms); //check ms plus need to unlock guard somehow
+    }
+    return;
+}
 
 int main(int argc, char* argv[])
 {
@@ -76,58 +165,61 @@ int main(int argc, char* argv[])
 
 
     //=============================================================================================================================
-    //Task 1. Insert sorted (and its template)
+    //Task 1. thread-safe cout wrapper
     //=============================================================================================================================
-
     {
-        vector<int> vec1;
-        vec1.reserve(20);
-        vec1.resize(20);
-        generate(vec1.begin(), vec1.end(), []() {return rand() % 99; });
-        sort(vec1.begin(), vec1.end());
-        for (auto const& _vec : vec1)
+        pcout p_cout;
+        vector<thread> threads;
+        threads.push_back(thread(TestPrint, p_cout, 1));
+        threads.push_back(thread(TestPrint, p_cout, 2));
+        threads.push_back(thread(TestPrint, p_cout, 3));
+        for (auto& th : threads)
         {
-            cout << _vec << " ";
+            th.detach();
         }
-        cout << endl;
-        insert_sorted(vec1, 100);
-        insert_sorted(vec1, 1);
-        insert_sorted(vec1, 34);
-        for (auto const& _vec : vec1)
-        {
-            cout << _vec << " ";
-        }
-        cout << endl;
-
-        deque<double> deq1{ 3.14, 5.31, 5.25, 8.23 };
-        sort(deq1.begin(), deq1.end());
-        insert_sorted<deque<double>, double>(deq1, 5.01);
-        for (auto const& deq : deq1)
-        {
-            cout << deq << " ";
-        }
-        cout << endl;
+        this_thread::sleep_for(1s);
     }
 
     //=============================================================================================================================
-    //Task 2. Analog vs digital
+    //Task 2. Multi-threaded prime number search progress
+    //=============================================================================================================================
+    {
+        size_t prime_number{ 0 };
+        bool ready_flag{ false };
+        thread prime_search_thread(PrimeNumSearcher, 10000, ref(prime_number), ref(ready_flag));
+
+        while (ready_flag != true)
+        {
+            cout << prime_number << '\n';
+            this_thread::sleep_for(1s);
+        }
+        prime_search_thread.detach();
+        cout << "The requested prime number is: " << prime_number << '\n';
+    }
+
+    //=============================================================================================================================
+    //Task 3. 
     //=============================================================================================================================
     cout << endl;
     {
-        vector<double> analogS(100);
-        generate(analogS.begin(), analogS.end(), []() {return getRandomNum(); });
-        vector<int> digitalS(analogS.begin(), analogS.end());
-        for (auto const& aElem : analogS)
-            cout << aElem << " ";
-        cout << endl << endl;
-        for (auto const& dElem : digitalS)
-            cout << dElem << " ";
-        cout << endl;
-        vector<double> disruption(100);
-        transform(analogS.begin(), analogS.end(), digitalS.begin(), disruption.begin(), [](double _analog, int _digital) {
-            return pow((_analog - static_cast<double>(_digital)), 2); });
-        double result = accumulate(disruption.begin(), disruption.end(), 0.0);
-        cout << "Ошибка цифрового сигнала равна: " << setprecision(7) << result << endl;
+        vector<size_t> valuables;
+        valuables.resize(10);
+        generate(valuables.begin(), valuables.end(), []() {size_t temp; do
+        {
+            temp = rand() % 100;
+        } while (temp == 0);
+        return temp; });
+        
+        mutex owner_valuables;
+        thread owner_th(owner, ref(valuables), ref(owner_valuables));
+        thread thief_th(thief, ref(valuables), ref(owner_valuables));
+        owner_th.join();
+        thief_th.join();
+        while (valuables.size() != 0)
+        {
+            continue;
+        }
+        cout << "Thief stole all goods!";
     }
 
     return 0;
